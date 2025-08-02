@@ -31,7 +31,7 @@ class _SignupScreenState extends State<SignupScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("Registered successfully")),
             );
-            Navigator.pushReplacementNamed(context, AppRouter.home);
+            Navigator.pushReplacementNamed(context, AppRouter.nav);
           }
         },
         builder: (context, state) {

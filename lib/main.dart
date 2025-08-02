@@ -1,6 +1,6 @@
 import 'package:e_commerce/bloc/auth/auth_bloc.dart';
+import 'package:e_commerce/bloc/nav/nav_bloc.dart';
 import 'package:e_commerce/routes/app_routes.dart';
-import 'package:e_commerce/ui/signin_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -15,7 +15,8 @@ void main() async {
   runApp(
     MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => AuthBloc(),)
+        BlocProvider(create: (_) => AuthBloc(),),
+        BlocProvider(create: (_) => NavigationBloc(),)
       ],
       child: const MyApp()
     )

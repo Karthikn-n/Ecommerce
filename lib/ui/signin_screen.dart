@@ -33,7 +33,7 @@ class _SigninScreenState extends State<SigninScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("LoggedIns successfully")),
             );
-            Navigator.pushReplacementNamed(context, AppRouter.home);
+            Navigator.pushReplacementNamed(context, AppRouter.nav);
           }
         },
         builder: (context, state) {
