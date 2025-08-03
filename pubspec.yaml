@@ -16,6 +16,8 @@ dependencies:
   supabase_flutter: ^2.9.1
   flutter_bloc: ^9.1.1
   crypto: ^3.0.6
+  cached_network_image: ^3.4.1
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:

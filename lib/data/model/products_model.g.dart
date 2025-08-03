@@ -10,10 +10,10 @@ ProductsModel _$ProductsModelFromJson(Map<String, dynamic> json) =>
     ProductsModel(
       id: (json['id'] as num).toInt(),
       categoryId: (json['categoryId'] as num).toInt(),
-      title: json['title'] as String,
+      title: json['name'] as String,
       description: json['description'] as String,
       imageUrl: json['imageUrl'] as String,
-      createdAt: json['createdAt'] as String,
+      createdAt: json['created_at'] as String,
       price: (json['price'] as num).toInt(),
     );
 
