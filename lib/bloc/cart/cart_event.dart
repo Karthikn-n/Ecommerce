@@ -1,12 +1,8 @@
-import 'package:e_commerce/data/model/cart_model.dart';
-
 abstract class CartEvent {}
 
 class LoadCartProducts extends CartEvent {}
 
 class CartUpdated extends CartEvent {
-  final List<CartModel> items;
-  CartUpdated(this.items);
 }
 
 class AddProduct extends CartEvent {
@@ -21,4 +17,11 @@ class RemoveProduct extends CartEvent {
   final int newQuantity;
 
   RemoveProduct({required this.cartId, required this.newQuantity});
+}
+
+class AddToCart extends CartEvent {
+  final int productId;
+  final int productCount;
+
+  AddToCart({required this.productId, this.productCount = 1});
 }

@@ -17,24 +17,27 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     on<AddProduct>(_onAddProduct);
     on<RemoveProduct>(_onRemoveProduct);
     on<CartUpdated>(_onCartUpdated);
+    on<AddToCart>(_onAddToCart);
   }
 
   Future<void> _onLoadCartProducts(LoadCartProducts event, Emitter<CartState> emit) async {
     emit(state.copywith(isInitialLoading: true));
 
-    // final userId = prefs.getString("userId")!;
-    _cartSubscription?.cancel(); // cancel if already listening
-
-    _cartSubscription = _supabaseService.fetchCartItems().listen((items) {
-      add(CartUpdated(items));
-    });
+    cartItems = await _supabaseService.fetchCartItems();
+    if(cartItems.isNotEmpty) {
+      emit(state.copywith(isInitialLoading: false, cartItems: cartItems));
+    } else {
+      emit(state.copywith(isInitialLoading: false, cartItems: []));
+    }
   }
+
 
   Future<void> _onAddProduct(AddProduct event, Emitter<CartState> emit) async {
     emit(state.copywith(isAdding: true));
     try {
       await _supabaseService.addProduct(event.newQuantity, event.cartId);
     } catch (_) {}
+    add(CartUpdated());
     emit(state.copywith(isAdding: false));
   }
 
@@ -47,12 +50,48 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         await _supabaseService.removeProduct(event.newQuantity, event.cartId);
       }
     } catch (_) {}
+    add(CartUpdated());
     emit(state.copywith(isRemoving: false));
   }
 
-  void _onCartUpdated(CartUpdated event, Emitter<CartState> emit) {
-    emit(state.copywith(isInitialLoading: false, cartItems: event.items));
-    cartItems = event.items;
+  Future<void> _onCartUpdated(CartUpdated event, Emitter<CartState> emit) async{
+    cartItems = await _supabaseService.fetchCartItems();
+    emit(state.copywith(isInitialLoading: false, cartItems: cartItems));
+  }
+
+
+  Future<void> _onAddToCart(AddToCart event, Emitter<CartState> emit) async {
+    emit(state.copywith(isAdding: true));
+
+    try {
+      // Check if product already exists in cart
+      CartModel? existing;
+
+      try {
+        existing = cartItems.firstWhere(
+          (item) => item.productId.id == event.productId,
+        );
+      } catch (_) {
+        existing = null;
+      }
+
+      if (existing != null) {
+        // Already exists — update quantity
+        await _supabaseService.addProduct(
+          existing.productCount + event.productCount,
+          existing.id,
+        );
+      } else {
+        // Doesn't exist — insert new
+        await _supabaseService.insertCartItem(
+          productId: event.productId,
+          productCount: event.productCount,
+        );
+        emit(state.copywith(isAdded: true));
+      }
+    } catch (_) {}
+    add(CartUpdated());
+    emit(state.copywith(isAdding: false, isAdded: false));
   }
 
   @override

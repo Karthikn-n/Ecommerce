@@ -6,13 +6,13 @@ part 'cart_model.g.dart';
 @JsonSerializable()
 class CartModel {
   final int id;
-  final ProductsModel product;
+  final ProductsModel productId;
   final int productCount;
-  final int userId;
+  final String userId;
 
   CartModel({
     required this.id,
-    required this.product,
+    required this.productId,
     required this.productCount,
     required this.userId,
   });

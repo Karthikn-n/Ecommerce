@@ -34,7 +34,7 @@ class CartScreen extends StatelessWidget {
 
 
           double total = state.cartItems.fold(0.0, (sum, item) {
-            return sum + (item.product.price * item.productCount);
+            return sum + (item.productId.price * item.productCount);
           });
 
           return Column(
@@ -45,9 +45,9 @@ class CartScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final item = state.cartItems[index];
                     return ListTile(
-                      leading: Image.network(item.product.imageUrl, width: 50, height: 50),
-                      title: Text(item.product.title),
-                      subtitle: Text("₹${item.product.price}"),
+                      leading: Image.network(item.productId.imageUrl, width: 50, height: 50),
+                      title: Text(item.productId.title),
+                      subtitle: Text("₹${item.productId.price}"),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

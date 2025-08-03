@@ -115,25 +115,49 @@ class SupabaseService {
   }
 
   // Fetch cart items from the table
-  Stream<List<CartModel>> fetchCartItems()  {
+  Future<List<CartModel>> fetchCartItems() async {
     String? userId = prefs.getString("userId");
-    print(userId);
     if(userId == null) throw Exception("User id not found");
     try {
-    return _supabase
+    final response = await _supabase
       .from("cart")
       .select('id, userId, productCount, productId(*)')
-      .eq("userId", userId!)
-      .asStream()
-      .map((event) {
-        log("Cart items: $event");
-        return event.map((json) => CartModel.fromJson(json),).toList();
-      },);
+      .eq("userId", userId);
+      if (response.isNotEmpty) {
+        return response.map((json) => CartModel.fromJson(json),).toList();
+      } else{
+        return [];
+      }
     } catch (e) {
       log("Something went wrong in fetching cart item", error: e.toString(), stackTrace: StackTrace.current);
       throw Exception(e.toString());
     }
   }
+
+  Future<bool> insertCartItem({
+    required int productId,
+    required int productCount,
+  }) async {
+    try {
+      final userId = prefs.getString("userId");
+
+      final response = await _supabase
+          .from("cart")
+          .insert({
+            "userId": userId,
+            "productId": productId,
+            "productCount": productCount,
+          })
+          .select()
+          .single(); // return inserted item if needed
+
+      return response.isNotEmpty;
+    } catch (e) {
+      log("Something went wrong in inserting cart item", error: e.toString());
+      throw Exception("Failed to insert item to cart");
+    }
+  }
+
 
   Future<bool> addProduct(int value, int id) async {
     try {
@@ -145,7 +169,8 @@ class SupabaseService {
           "productCount": value
         })
         .eq("id", id)
-        .eq("userId", userId!);
+        .eq("userId", userId!)
+        .select();
       if (response.isNotEmpty) {
         return true;
       } else {
