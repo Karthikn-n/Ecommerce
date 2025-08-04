@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:e_commerce/bloc/cart/cart_bloc.dart';
 import 'package:e_commerce/bloc/cart/cart_event.dart';
 import 'package:e_commerce/bloc/cart/cart_state.dart';
@@ -45,9 +46,36 @@ class CartScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final item = state.cartItems[index];
                     return ListTile(
-                      leading: Image.network(item.productId.imageUrl, width: 50, height: 50),
+                      leading: SizedBox(
+                        height: 50,
+                        width: 50,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8.0),
+                          child: CachedNetworkImage(
+                            imageUrl: item.productId.imageUrl,
+                            imageBuilder: (context, imageProvider) {
+                              return Container(
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image: imageProvider,
+                                    fit: BoxFit.cover
+                                  )
+                                ),
+                              );
+                            },
+                            errorWidget: (context, url, error) {
+                              return Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                ),
+                                child: Center(child: Icon(Icons.error_outline),),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
                       title: Text(item.productId.title),
-                      subtitle: Text("₹${item.productId.price}"),
+                      subtitle: Text("₹${item.productId.price * item.productCount}"),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -79,12 +107,24 @@ class CartScreen extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Column(
+                  spacing: 5,
                   children: [
-                    Text("Total", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                    Text("₹${total.toStringAsFixed(2)}", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Total", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                        Text("₹${total.toStringAsFixed(2)}", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: (){}, 
+                        child: Text("Checkout")
+                      ),
+                    )
                   ],
                 ),
               )

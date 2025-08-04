@@ -4,6 +4,9 @@ import 'package:e_commerce/bloc/cart/cart_event.dart';
 import 'package:e_commerce/bloc/home/home_bloc.dart';
 import 'package:e_commerce/bloc/home/home_event.dart';
 import 'package:e_commerce/bloc/nav/nav_bloc.dart';
+import 'package:e_commerce/bloc/nav/nav_event.dart';
+import 'package:e_commerce/bloc/nav/nav_state.dart';
+import 'package:e_commerce/bloc/profile/profile_bloc.dart';
 import 'package:e_commerce/helper/shared_preferences_helper.dart';
 import 'package:e_commerce/routes/app_routes.dart';
 import 'package:flutter/material.dart';
@@ -22,9 +25,10 @@ void main() async {
     MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => AuthBloc(),),
-        BlocProvider(create: (_) => NavigationBloc(),),
+        BlocProvider(create: (_) => NavigationBloc()..add(NavigationTabChanged(NavigationTab.home)),),
         BlocProvider(create: (_) => HomeBloc()..add(LoadProducts()),),
-        BlocProvider(create: (_) => CartBloc()..add(LoadCartProducts()))
+        BlocProvider(create: (_) => CartBloc()..add(LoadCartProducts())),
+        BlocProvider(create: (_) => ProfileCubit()),
       ],
       child: const MyApp()
     )
@@ -65,7 +69,7 @@ class MyApp extends StatelessWidget {
           )
         )
       ),
-      initialRoute: AppRouter.nav,
+      initialRoute: AppRouter.login,
       onGenerateRoute: AppRouter.generateRoute,
     );
   }

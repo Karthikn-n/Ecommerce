@@ -56,18 +56,25 @@ class _SearchScreenState extends State<SearchScreen> {
                     onChanged: (value) {
                       setState(() {}); // fine for now
                     },
+                    onTapOutside: (event) {
+                      _focusNode.unfocus();
+                    },
                   ),
                 ),
               ),
             ),
           ),
 
-          body: ListView.builder(
+          body: filteredProducts.isEmpty
+          ? Center(
+            child: Text(
+              "No products found"
+            ),
+          )
+          : ListView.builder(
             itemCount: filteredProducts.length,
             itemBuilder: (context, index) {
-              return filteredProducts.isEmpty 
-              ? SizedBox()
-              : ListTile(
+              return ListTile(
                 leading: SizedBox(
                   height: 50,
                   width: 50,

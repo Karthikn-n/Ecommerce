@@ -27,23 +27,25 @@ class SupabaseService {
         .eq('email', email)
         .maybeSingle();
       if (existing != null) {
-        throw AuthException("Email already registered.");
-      } else {
-        final response = await _supabase.auth.signUp(email: email, password: password);
-        final user = response.user;
-        log("Response of register ${response.user}");
-        await prefs.setString("userId", user!.id);
-        final hashedPassword = hashPassword(password); 
-        await _supabase.from('users').insert({
-          'id': user.id,
-          'name': name,
-          'email': email,
-          'password': hashedPassword, 
-        });
+        throw AuthException("User already exists. Kindly login");
       }
+      final response = await _supabase.auth.signUp(email: email, password: password);
+      final user = response.user;
+      log("Response of register ${response.user}");
+      await prefs.setString("userId", user!.id);
+      final hashedPassword = hashPassword(password); 
+      await _supabase.from('users').insert({
+        'id': user.id,
+        'name': name,
+        'email': email,
+        'password': hashedPassword, 
+      }).select().single();
 
-    } catch (e) {
-      throw AuthException("Email already registered.");
+    } on AuthException catch(_) {
+      throw AuthException("User already exists", statusCode: "422");
+    } on Exception catch (e) {
+      log("Something went wrong in signup", error: e.toString(), stackTrace: StackTrace.current);
+      throw Exception(e.toString());
     }
   }
 
@@ -140,7 +142,7 @@ class SupabaseService {
   }) async {
     try {
       final userId = prefs.getString("userId");
-
+      if(userId == null) throw Exception("User id not found");
       final response = await _supabase
           .from("cart")
           .insert({
@@ -163,13 +165,14 @@ class SupabaseService {
     try {
 
       String? userId = prefs.getString("userId");
+      if(userId == null) throw Exception("User id not found");
       final response = await _supabase
         .from("cart")
         .update({
           "productCount": value
         })
         .eq("id", id)
-        .eq("userId", userId!)
+        .eq("userId", userId)
         .select();
       if (response.isNotEmpty) {
         return true;
@@ -186,13 +189,15 @@ class SupabaseService {
     try {
 
       String? userId = prefs.getString("userId");
+      if(userId == null) throw Exception("User id not found");
       final response = await _supabase
         .from("cart")
         .update({
           "productCount": value
         })
         .eq("id", id)
-        .eq("userId", userId!);
+        .eq("userId", userId)
+        .select();
       if (response.isNotEmpty) {
         return true;
       } else {
@@ -207,12 +212,13 @@ class SupabaseService {
   Future<bool> deleteCartItem(int cartId) async {
     try {
       String? userId = prefs.getString("userId");
-
+      if(userId == null) throw Exception("User id not found");
       final response = await _supabase
           .from("cart")
           .delete()
           .eq("id", cartId)
-          .eq("userId", userId!);
+          .eq("userId", userId)
+          .select();
 
       return response.isNotEmpty;
     } catch (e) {
@@ -221,6 +227,42 @@ class SupabaseService {
     }
   }
 
+  Future<void> clearCartForUser(String userId) async {
+    try {
+      final response = await _supabase
+          .from('cart')
+          .delete()
+          .eq('userId', userId)
+          .select();
+    
+    } catch (e) {
+      log("Error clearing cart for user", error: e.toString(), stackTrace: StackTrace.current);
+      throw Exception("Failed to clear cart");
+    }
+  }
+
+
+  Future<ProfileModel> getUserProfile() async {
+    try {
+      final userId = prefs.getString("userId");
+      if(userId == null) throw Exception("User id not found");
+      final response = await _supabase
+          .from('users')
+          .select()
+          .eq('id', userId)
+          .single();
+      log("Profile response: $response");
+      return ProfileModel.fromJson(response);
+    } catch (e) {
+      log("Something went wrong in profile", error: e.toString(), stackTrace: StackTrace.current);
+      throw Exception("Failed to fetch profile");
+    }
+  }
+
+
+  Future<void> signout() async {
+    await prefs.clear();
+  }
   
 
 

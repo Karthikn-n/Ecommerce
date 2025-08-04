@@ -1,5 +1,4 @@
 import 'package:e_commerce/bloc/home/home_bloc.dart';
-import 'package:e_commerce/bloc/home/home_event.dart';
 import 'package:e_commerce/bloc/home/home_state.dart';
 import 'package:e_commerce/widgets/home/products_widget.dart';
 import 'package:flutter/material.dart';

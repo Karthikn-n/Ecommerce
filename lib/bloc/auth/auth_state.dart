@@ -6,8 +6,8 @@ class AuthState {
   final bool isPasswordVisible;
   final String? errorMessage;
   final bool isSuccess;
-  final String? singupError;
-  final bool isSingupSuccess;
+  final String? signupError;
+  final bool isSignupSuccess;
 
   AuthState({
     this.isLoading = false,
@@ -17,8 +17,8 @@ class AuthState {
     this.isSignupConfirmPasswordVisible = false,
     this.isSignupPasswordVisible = false,
     this.isSuccess = false,
-    this.singupError,
-    this.isSingupSuccess = false,
+    this.signupError,
+    this.isSignupSuccess = false,
   });
 
   AuthState singinCopyWith({
@@ -39,15 +39,15 @@ class AuthState {
     bool? isSignupLoading,
     bool? isSignupPasswordVisible,
     bool? isSignupConfirmPasswordVisible,
-    bool? isSingupSuccess,
-    String? singupError,
+    bool? isSignupSuccess,
+    String? signupError,
   }) {
     return AuthState(
-      isSignupLoading: isSingupSuccess ?? this.isSingupSuccess,
+      isSignupLoading: isSignupLoading ?? this.isSignupLoading,
       isSignupPasswordVisible: isSignupPasswordVisible ?? this.isSignupPasswordVisible,
       isSignupConfirmPasswordVisible: isSignupConfirmPasswordVisible ?? this.isSignupConfirmPasswordVisible,
-      isSingupSuccess: isSingupSuccess ?? this.isSingupSuccess,
-      singupError: singupError ?? this.singupError,
+      isSignupSuccess: isSignupSuccess ?? this.isSignupSuccess,
+      signupError: signupError ?? this.signupError,
     );
   }
 }

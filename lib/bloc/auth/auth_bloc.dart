@@ -17,15 +17,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState>{
 
     // Emit the signup password visibilyt
     on<SignupTogglePasswordVisibility>((event, emit) {
-      emit(state.signupCopyWith(isSignupPasswordVisible: !state.isSignupPasswordVisible, singupError: null));
+      emit(state.signupCopyWith(isSignupPasswordVisible: !state.isSignupPasswordVisible, signupError: null));
     },);
 
     // Emit the signup confirm password visibilyt
     on<SignupToggleConfirmPasswordVisibility>((event, emit) {
-      emit(state.signupCopyWith(isSignupConfirmPasswordVisible: !state.isSignupConfirmPasswordVisible, singupError: null));
+      emit(state.signupCopyWith(isSignupConfirmPasswordVisible: !state.isSignupConfirmPasswordVisible, signupError: null));
     },);
     
-    on<ClearSignupError>((event, emit) => emit(state.signupCopyWith(singupError: null)),);
+    on<ClearSignupError>((event, emit) => emit(state.signupCopyWith(signupError: null)),);
 
     on<ClearSigninError>((event, emit) => emit(state.singinCopyWith(errorMessage: null)),);
 
@@ -36,20 +36,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState>{
 
 
   Future<void> _handleSignUp(SignUpRequested event, Emitter<AuthState> emit) async {
-    emit(state.signupCopyWith(isSignupLoading: true, singupError: null, isSingupSuccess: false));
+    emit(state.signupCopyWith(isSignupLoading: true, signupError: null, isSignupSuccess: false));
     try {
       await _authService.signUpWithDetails(
         name: event.name,
         email: event.email,
         password: event.password,
       );
-      emit(state.signupCopyWith(isSignupLoading: false, isSingupSuccess: true, singupError: null));
+      emit(state.signupCopyWith(isSignupLoading: false, isSignupSuccess: true, signupError: null));
     }  on AuthException catch (e) {
       log("signup error", error: e.message);
-      emit(state.signupCopyWith(isSignupLoading: false, singupError: e.message));
+      emit(state.signupCopyWith(isSignupLoading: false, signupError: e.message));
     }  on Exception catch (e) { 
       log("Something went wrong in signup", error: e.toString(), stackTrace: StackTrace.current);
-      emit(state.signupCopyWith(isSignupLoading: false, singupError: e.toString()));
+      emit(state.signupCopyWith(isSignupLoading: false, signupError: e.toString()));
     }
   }
 

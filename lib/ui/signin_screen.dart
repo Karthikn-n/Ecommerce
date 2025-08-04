@@ -1,6 +1,7 @@
 import 'package:e_commerce/bloc/auth/auth_bloc.dart';
 import 'package:e_commerce/bloc/auth/auth_event.dart';
 import 'package:e_commerce/bloc/auth/auth_state.dart';
+import 'package:e_commerce/bloc/profile/profile_bloc.dart';
 import 'package:e_commerce/routes/app_routes.dart';
 import 'package:e_commerce/widgets/auth/form_layout_widget.dart';
 import 'package:flutter/material.dart';
@@ -26,11 +27,12 @@ class _SigninScreenState extends State<SigninScreen> {
       //   title: Text("Singin"),
       // ),
       body: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state.isSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("LoggedIns successfully")),
+              SnackBar(content: Text("LoggedIn successfully")),
             );
+            await context.read<ProfileCubit>().fetchProfile();
             Navigator.pushReplacementNamed(context, AppRouter.nav);
           }
         },
@@ -109,8 +111,8 @@ class _SigninScreenState extends State<SigninScreen> {
                                 minimumSize: Size(double.infinity, 40),
                               ),
                               onPressed: state.isLoading
-                              ? () {}
-                              :  () {
+                              ? null
+                              : () {
                                 if(_passwordController.text.length < 6){
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text("Password must atleaset 6 letter")),

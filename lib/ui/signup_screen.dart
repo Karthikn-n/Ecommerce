@@ -1,6 +1,7 @@
 import 'package:e_commerce/bloc/auth/auth_bloc.dart';
 import 'package:e_commerce/bloc/auth/auth_event.dart';
 import 'package:e_commerce/bloc/auth/auth_state.dart';
+import 'package:e_commerce/bloc/profile/profile_bloc.dart';
 import 'package:e_commerce/routes/app_routes.dart';
 import 'package:e_commerce/widgets/auth/form_layout_widget.dart';
 import 'package:flutter/material.dart';
@@ -25,12 +26,18 @@ class _SignupScreenState extends State<SignupScreen> {
     final size = MediaQuery.sizeOf(context);
     return Scaffold(
       body: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state.isSingupSuccess) {
+        listener: (context, state) async {
+          if (state.isSignupSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("Registered successfully")),
             );
+            await context.read<ProfileCubit>().fetchProfile();
             Navigator.pushReplacementNamed(context, AppRouter.nav);
+          }
+           if (state.signupError != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.signupError!)),
+            );
           }
         },
         builder: (context, state) {
@@ -150,35 +157,33 @@ class _SignupScreenState extends State<SignupScreen> {
                               style: FilledButton.styleFrom(
                                 minimumSize: Size(double.infinity, 40),
                               ),
-                              onPressed: state.isSignupLoading 
+                              onPressed: state.isSignupLoading && !state.isSignupSuccess
                               ? null
                               : () async {
-                                if(_confirmPasswordController.text != _passwordController.text) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text("Password and Confirm password must match")),
-                                  );
-                                  return;
-                                } else if(_passwordController.text.length < 6){
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text("Password must atleaset 6 letter")),
-                                  );
-                                  return;
-                                } else {
-                                  context.read<AuthBloc>().add(SignUpRequested(
-                                      _emailController.text, 
-                                      _passwordController.text, 
-                                      _confirmPasswordController.text, 
+                                if (_key.currentState!.validate()) {
+                                    if (_confirmPasswordController.text != _passwordController.text) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text("Password and Confirm password must match")),
+                                      );
+                                      return;
+                                    } else if (_passwordController.text.length < 6) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text("Password must be at least 6 characters")),
+                                      );
+                                      return;
+                                    }
+
+                                    // Dispatch event — no need to check state here
+                                    context.read<AuthBloc>().add(SignUpRequested(
+                                      _emailController.text,
+                                      _passwordController.text,
+                                      _confirmPasswordController.text,
                                       _nameController.text,
-                                    )
-                                  );
-                                  if (state.singupError != null ) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(state.singupError!)),
-                                    );
+                                    ));
+                                   
                                   }
-                                }
                               },
-                              child: state.isSignupLoading
+                              child: state.isSignupLoading && !state.isSignupSuccess
                               ? SizedBox(
                                   height: 24,
                                   width: 24,
