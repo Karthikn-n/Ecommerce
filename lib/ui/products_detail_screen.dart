@@ -75,7 +75,25 @@ class ProductsDetailScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BlocBuilder<CartBloc, CartState>(
+      bottomNavigationBar: BlocConsumer<CartBloc, CartState>(
+        listener: (context, cartState) {
+           if (cartState.isAdded) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Product added to cart")),
+            );
+
+            // context.read<CartBloc>().emit(cartState.copywith(isAdded: false));
+          }
+          if (cartState.isRemoved) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Item removed from cart")),
+            );
+
+            // Reset isRemoved so it doesn't trigger again
+            // ignore: invalid_use_of_visible_for_testing_member
+            // context.read<CartBloc>().emit(cartState.copywith(isRemoved: false));
+          }
+        },
         builder: (context, cartState) {
           CartModel? cartItem;
           try {
@@ -106,10 +124,39 @@ class ProductsDetailScreen extends StatelessWidget {
                       ),
                       onPressed: () {
                         final currentCount = productCount;
-                        context.read<CartBloc>().add(RemoveProduct(
-                          cartId: cartItem!.id,
-                          newQuantity: currentCount - 1,
-                        ));
+                        if(currentCount == 1) {
+                          showDialog(
+                            context: context, 
+                            builder: (dictx) {
+                              return SimpleDialog(
+                                title: Text("Are you want to delete it from cart?"),
+                                children: [
+                                  // Remove the item from cart
+                                  SimpleDialogOption(
+                                    onPressed: () {
+                                      context.read<CartBloc>().add(RemoveProduct(
+                                        cartId: cartItem!.id,
+                                        newQuantity: currentCount - 1,
+                                      ));
+                                      Navigator.pop(dictx);
+                                    },
+                                    child: Text("Yes"),
+                                  ),
+                                  // Cancel the operation
+                                  SimpleDialogOption(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: Text("Cancel"),
+                                  )
+                                ],
+                              );
+                            },
+                          );
+                        } else{
+                          context.read<CartBloc>().add(RemoveProduct(
+                            cartId: cartItem!.id,
+                            newQuantity: currentCount - 1,
+                          ));
+                        }
                       },
                     ),
                     Text("$productCount", style: TextStyle(color: Colors.white),),
@@ -129,11 +176,7 @@ class ProductsDetailScreen extends StatelessWidget {
               : FilledButton(
                 onPressed: () {
                   context.read<CartBloc>().add(AddToCart(productId: product.id));
-                  if (cartState.isAdded != null && cartState.isAdded) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Product added to cart")),
-                    );
-                  }
+                 
                 }, 
                 child: Text("Add to cart")
               ),

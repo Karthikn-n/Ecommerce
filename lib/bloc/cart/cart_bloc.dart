@@ -20,6 +20,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     on<AddToCart>(_onAddToCart);
   }
 
+  // Load the cart products at first state
   Future<void> _onLoadCartProducts(LoadCartProducts event, Emitter<CartState> emit) async {
     emit(state.copywith(isInitialLoading: true));
 
@@ -31,9 +32,9 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     }
   }
 
-
+  // Add the products in the cart like update the quantity
   Future<void> _onAddProduct(AddProduct event, Emitter<CartState> emit) async {
-    emit(state.copywith(isAdding: true));
+    emit(state.copywith(isAdding: true, isRemoved: false));
     try {
       await _supabaseService.addProduct(event.newQuantity, event.cartId);
     } catch (_) {}
@@ -41,17 +42,20 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     emit(state.copywith(isAdding: false));
   }
 
+  // Remove the cart products
   Future<void> _onRemoveProduct(RemoveProduct event, Emitter<CartState> emit) async {
     emit(state.copywith(isRemoving: true));
     try {
-      if (event.newQuantity <= 0) {
-        await _supabaseService.deleteCartItem(event.cartId); // Optional deletion if 0
+      if (event.newQuantity < 1) {
+        await _supabaseService.deleteCartItem(event.cartId); 
+        emit(state.copywith(isRemoved: true));
       } else {
         await _supabaseService.removeProduct(event.newQuantity, event.cartId);
       }
     } catch (_) {}
+    // Update the cart value refetch the cart items
     add(CartUpdated());
-    emit(state.copywith(isRemoving: false));
+    emit(state.copywith(isRemoving: false, isRemoved: false));
   }
 
   Future<void> _onCartUpdated(CartUpdated event, Emitter<CartState> emit) async{
@@ -59,7 +63,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     emit(state.copywith(isInitialLoading: false, cartItems: cartItems));
   }
 
-
+  // Add the products to the cart at first time
   Future<void> _onAddToCart(AddToCart event, Emitter<CartState> emit) async {
     emit(state.copywith(isAdding: true));
 
@@ -90,13 +94,10 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         emit(state.copywith(isAdded: true));
       }
     } catch (_) {}
+    // Update the cart value refetch the cart items
     add(CartUpdated());
     emit(state.copywith(isAdding: false, isAdded: false));
   }
 
-  @override
-  Future<void> close() {
-    _cartSubscription?.cancel();
-    return super.close();
-  }
+  
 }

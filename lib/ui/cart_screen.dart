@@ -15,7 +15,18 @@ class CartScreen extends StatelessWidget {
         automaticallyImplyLeading: false,
         title: Text("Cart"),
       ),
-      body: BlocBuilder<CartBloc, CartState>(
+      body: BlocConsumer<CartBloc, CartState>(
+        listener: (context, state) {
+           if (state.isRemoved) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Item removed from cart")),
+            );
+
+            // Reset isRemoved so it doesn't trigger again
+            // ignore: invalid_use_of_visible_for_testing_member
+            // context.read<CartBloc>().emit(state.copywith(isRemoved: false));
+          }
+        },
         builder: (context, state) {
           if (state.isInitialLoading) {
             return Center(child: CircularProgressIndicator());
@@ -83,10 +94,40 @@ class CartScreen extends StatelessWidget {
                             icon: Icon(item.productCount == 1 ? Icons.delete_outline : Icons.remove),
                             onPressed: () {
                               final currentCount = item.productCount;
-                              context.read<CartBloc>().add(RemoveProduct(
-                                cartId: item.id,
-                                newQuantity: currentCount - 1,
-                              ));
+                              if(item.productCount == 1) {
+                                showDialog(
+                                  context: context, 
+                                  builder: (dictx) {
+                                    return SimpleDialog(
+                                      title: Text("Are you want to delete it from cart?"),
+                                      children: [
+                                        // Remove the item from cart
+                                        SimpleDialogOption(
+                                          onPressed: () {
+                                            context.read<CartBloc>().add(RemoveProduct(
+                                              cartId: item.id,
+                                              newQuantity: currentCount - 1,
+                                            ));
+                                            Navigator.pop(dictx);
+                                          },
+                                          child: Text("Yes"),
+                                        ),
+                                        // Cancel the operation
+                                        SimpleDialogOption(
+                                          onPressed: () => Navigator.pop(context),
+                                          child: Text("Cancel"),
+                                        )
+                                      ],
+                                    );
+                                  },
+                                );
+                              } else{
+
+                                context.read<CartBloc>().add(RemoveProduct(
+                                  cartId: item.id,
+                                  newQuantity: currentCount - 1,
+                                ));
+                              }
                             },
                           ),
                           Text("${item.productCount}"),
@@ -94,10 +135,16 @@ class CartScreen extends StatelessWidget {
                             icon: Icon(Icons.add),
                             onPressed: () {
                               final currentCount = item.productCount;
+                              
                               context.read<CartBloc>().add(AddProduct(
                                 cartId: item.id,
                                 newQuantity: currentCount + 1,
                               ));
+                              if (currentCount == 1) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Product added to cart")),
+                                );
+                              }
                             },
                           ),
                         ],
